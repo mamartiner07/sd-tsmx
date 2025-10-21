@@ -1,0 +1,748 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Request for absence</title>
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    
+    <style>
+      :root {
+        --brand:#E20074; --brand-ink:#fff; --bg:#f8f7fb; --card:#fff; --text:#1c1c1c; --muted:#6b7280; --ring:rgba(226,0,116,.35);
+        --ok:#16a34a; --warn:#eab308; --rej:#dc2626; --pend:#2563eb;
+      }
+      *{box-sizing:border-box} html,body{height:100%}
+      body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;line-height:1.5;display:grid;place-items:start center}
+      .wrap{width:100%;max-width:960px;padding:24px}
+
+      .hero{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;margin:12px 0 24px}
+      .brand{display:inline-flex;align-items:center;gap:12px;font-weight:800;font-size:clamp(20px,3vw,28px)}
+      .brand-badge{width:40px;height:40px;border-radius:12px;background:var(--brand);display:grid;place-items:center;color:#fff;box-shadow:0 6px 16px rgba(226,0,116,.35)}
+      .hero-note{color:var(--muted);font-size:14px}
+      .user-chip{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid #ecebf1;border-radius:999px;padding:6px 10px;box-shadow:0 4px 14px rgba(0,0,0,.06);margin-left:8px}
+      .user-dot{width:8px;height:8px;border-radius:999px;background:var(--brand);box-shadow:0 0 0 3px rgba(226,0,116,.18)}
+
+      .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+      @media (max-width:980px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+      @media (max-width:560px){.grid{grid-template-columns:1fr}}
+
+      .card{position:relative;border-radius:16px;background:var(--card);border:1px solid #ecebf1;padding:18px 16px;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.04);transition:transform .12s,box-shadow .12s,border-color .12s;outline:0}
+      .card:hover,.card:focus-visible{transform:translateY(-2px);box-shadow:0 8px 26px rgba(226,0,116,.18);border-color:var(--brand)}
+      .icon{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;background:rgba(226,0,116,.08);font-size:28px;margin-bottom:12px;border:1px solid rgba(226,0,116,.25)}
+      .title{font-weight:700;font-size:16px}
+      .desc{color:var(--muted);font-size:13px;margin-top:4px;min-height:36px}
+      .sprinkles{position:absolute;inset:0;pointer-events:none}
+      .sprinkles::before,.sprinkles::after{content:"";position:absolute;top:-6px;right:8px;width:8px;height:8px;border-radius:2px;transform:rotate(15deg);background:var(--brand)}
+      .sprinkles::after{top:auto;bottom:-6px;left:10px;right:auto;opacity:.5}
+
+      .cta{display:flex;gap:8px;align-items:center;justify-content:flex-end;margin-top:26px;flex-wrap:wrap}
+      .btn{background:var(--brand);color:#fff;border:0;border-radius:12px;padding:10px 14px;font-weight:700;cursor:pointer;box-shadow:0 8px 22px rgba(226,0,116,.35)}
+      .btn[disabled]{opacity:.6;cursor:not-allowed}
+      .btn-secondary{background:#fff;color:#1c1c1c;border:1px solid #d9d7e0;box-shadow:none}
+
+      .form-card{background:#fff;border:1px solid #ecebf1;border-radius:16px;padding:20px;box-shadow:0 6px 20px rgba(0,0,0,.04);margin-top:16px}
+      .form-title{margin:0 0 8px;font-size:20px;font-weight:800;display:flex;align-items:center;gap:8px}
+      .callout{background:rgba(226,0,116,.06);border:1px solid rgba(226,0,116,.25);padding:10px 12px;border-radius:12px;color:#5b0c37}
+      .field{margin-top:14px}
+      .label{font-weight:700}
+      .help{font-size:12px;color:var(--muted);margin-top:4px}
+      .input{margin-top:6px;width:100%;padding:10px;border-radius:10px;border:1px solid #d9d7e0}
+      .req{color:var(--brand)}
+      .form-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
+
+      .toast{position:fixed;right:16px;bottom:16px;background:#111;color:#fff;padding:12px 14px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.25);display:none;z-index:60}
+      .toast.error{background:#7a0a3a}
+      .toast.show{display:block}
+
+      /* Historial */
+      .timeline-card{background:#fff;border:1px solid #ecebf1;border-radius:16px;padding:20px;box-shadow:0 6px 20px rgba(0,0,0,.04);margin-top:16px}
+      .hist-grid{display:grid;grid-template-columns:1fr;gap:12px}
+      .h-item{border:1px solid #ecebf1;border-radius:14px;padding:12px}
+      .h-head{display:flex;justify-content:space-between;gap:8px}
+      .h-type{font-weight:800}
+      .h-meta{color:var(--muted);font-size:12px}
+      .badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;border-radius:999px;padding:4px 8px;border:1px solid #e5e7eb}
+      .b-ok{background:#ecfdf5;color:#065f46;border-color:#a7f3d0}
+      .b-rej{background:#fef2f2;color:#991b1b;border-color:#fecaca}
+      .b-pend{background:#eff6ff;color:#1e40af;border-color:#bfdbfe}
+
+      .steps{position:relative;margin-top:10px;padding-left:22px}
+      .steps::before{content:'';position:absolute;left:10px;top:0;bottom:0;width:2px;background:#e5e7eb}
+      .st{position:relative;margin:8px 0}
+      .dot{position:absolute;left:-2px;top:4px;width:14px;height:14px;border-radius:999px;background:#9ca3af;box-shadow:0 0 0 3px #fff;border:2px solid #fff}
+      .st-ok .dot{background:var(--ok)}
+      .st-wait .dot{background:var(--pend)}
+      .st-rej .dot{background:var(--rej)}
+      .st-body{background:#fff;border:1px solid #ecebf1;border-radius:10px;padding:8px 10px;margin-left:12px}
+      .st-label{font-weight:700;font-size:13px}
+      .st-at{color:var(--muted);font-size:12px;margin-left:6px}
+      
+      /* ESTILO PARA COMENTARIOS */
+      .st-comment {
+        font-size: 12px;
+        color: #374151;
+        margin-top: 6px;
+        padding: 6px 8px;
+        background: #f7f9fc;
+        border-radius: 6px;
+        border: 1px solid #e0e6f0;
+      }
+
+      /* Overlay de carga */
+      .overlay {
+        position: fixed; inset: 0; background: rgba(255,255,255,.7);
+        display: none; align-items: center; justify-content: center; flex-direction: column;
+        z-index: 50; backdrop-filter: blur(1px);
+      }
+      .overlay.show { display: flex; }
+      .spinner {
+        width: 42px; height: 42px; border-radius: 50%;
+        border: 4px solid rgba(226,0,116,.2); border-top-color: var(--brand);
+        animation: spin 1s linear infinite;
+      }
+      .overlay-text { margin-top: 10px; color:#5b0c37; font-weight:700 }
+      @keyframes spin { to { transform: rotate(360deg); } }
+
+      /* Modal Feedback */
+      .modal-backdrop{
+        position: fixed; inset:0; background: rgba(0,0,0,.35); display:none; align-items:center; justify-content:center; z-index:70;
+      }
+      .modal-backdrop.show{ display:flex; }
+      .modal{
+        width: min(560px, 92vw); background:#fff; border-radius:16px; border:1px solid #ecebf1; padding:18px;
+        box-shadow: 0 20px 60px rgba(0,0,0,.25);
+      }
+      .modal h3{ margin:6px 0 8px; font-weight:800; font-size:18px }
+      .modal p{ margin:0 0 10px; color:var(--muted); font-size:14px }
+      .stars{ display:flex; gap:8px; font-size:26px; }
+      .star{ cursor:pointer; transition: transform .06s }
+      .star:hover{ transform: scale(1.1) }
+      .star.sel{ color:#E4BB24 }
+      .modal textarea{ width:100%; min-height:80px; padding:10px; border:1px solid #e5e7eb; border-radius:10px; margin-top:10px; }
+      .modal .actions{ display:flex; justify-content:flex-end; gap:8px; margin-top:14px }
+      
+      /* 2. CSS PARA FECHAS OCUPADAS (Flatpickr) */
+      /* Este estilo hace que el día ocupado se vea rojo en el calendario */
+      .flatpickr-day.occupied-day, 
+      .flatpickr-day.startRange.occupied-day,
+      .flatpickr-day.endRange.occupied-day {
+          background: #fca5a5 !important; 
+          border-color: #fca5a5 !important;
+          color: #991b1b !important;
+          cursor: not-allowed;
+      }
+      .flatpickr-day.inRange.occupied-day {
+          background: #fee2e2 !important; 
+          border-color: #fee2e2 !important;
+          color: #991b1b !important;
+          cursor: not-allowed;
+      }
+      .flatpickr-day.occupied-day:hover,
+      .flatpickr-day.occupied-day:focus {
+        background: #f87171 !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="hero" aria-label="Selector de tipo de solicitud">
+        <div class="brand">
+          <span class="brand-badge" aria-hidden="true">💼</span>
+          <span>Request for absence</span>
+        </div>
+        <div class="hero-note">
+          <span id="userChip" class="user-chip" style="display:inline-flex;">
+            <span class="user-dot" aria-hidden="true"></span>
+            <span id="userEmail">cargando…</span>
+          </span>
+        </div>
+      </header>
+
+      <main>
+        <section class="grid" role="list">
+          <article class="card" role="listitem" tabindex="0" data-key="vacaciones">
+            <div class="sprinkles"></div><div class="icon">🏖️</div>
+            <div class="title">Solicitud de vacaciones</div>
+            <div class="desc">Planea tus días libres y envía la solicitud a tu TL.</div>
+          </article>
+
+          <article class="card" role="listitem" tabindex="0" data-key="cambio-horario">
+            <div class="sprinkles"></div><div class="icon">🔄</div>
+            <div class="title">Solicitud de cambio de horario</div>
+            <div class="desc">Solicita intercambiar tu turno con un compañero.</div>
+          </article>
+
+          <article class="card" role="listitem" tabindex="0" data-key="justificacion-retardo">
+            <div class="sprinkles"></div><div class="icon">🕒</div>
+            <div class="title">Justificación de retardo</div>
+            <div class="desc">Explica la causa del retraso y solicita registro.</div>
+          </article>
+
+          <article class="card" role="listitem" tabindex="0" data-key="mis-solicitudes">
+            <div class="sprinkles"></div><div class="icon">📜</div>
+            <div class="title">Mis solicitudes</div>
+            <div class="desc">Consulta el historial y estatus de tus solicitudes.</div>
+          </article>
+        </section>
+
+        <div class="cta">
+          <button class="btn" id="startBtn" disabled>Continuar →</button>
+        </div>
+
+        <div id="vacacionesForm" style="display:none;">
+          <section class="form-card">
+            <h2 class="form-title">Solicitud de vacaciones <span aria-hidden="true">🏖️</span></h2>
+            <p class="callout">Recuerda: las vacaciones deben solicitarse con <b>10 a 15 días</b> de anticipación. Las fechas ocupadas por otros compañeros ese encuentran bloqueadas en el calendario.</p>
+            <form id="vacForm">
+              <div class="field">
+                <label class="label">Rango de fechas de vacaciones <span class="req">*</span></label>
+                <input type="text" id="vacationRange" name="vacationRange" required class="input" placeholder="Cargando calendario..." />
+                <input type="hidden" name="startDate" id="vacationStart" />
+                <input type="hidden" name="endDate" id="vacationEnd" />
+              </div>
+              <div class="form-actions">
+                <button type="button" class="btn btn-secondary" id="backToMenu">← Volver</button>
+                <button type="submit" class="btn" id="sendVac" disabled>Enviar solicitud</button>
+              </div>
+            </form>
+          </section>
+        </div>
+
+        <div id="cambioForm" style="display:none;">
+          <section class="form-card">
+            <h2 class="form-title">Solicitud de cambio de horario <span aria-hidden="true">🔄</span></h2>
+            <p class="callout">Propuesta de intercambio de turno con un compañero. Ambos deben estar de acuerdo.</p>
+            <form id="swapForm">
+              <div class="field">
+                <label class="label">Ingresa el correo de tu compañero <span class="req">*</span></label>
+                <input type="email" name="peerEmail" required class="input" placeholder="companero@empresa.com" />
+              </div>
+              <div class="field">
+                <label class="label">Ingresa <u>TU</u> horario actual <span class="req">*</span></label>
+                <div class="help">Ejemplo: L-V 09:00–18:00</div>
+                <input type="text" name="yourSchedule" required class="input" />
+              </div>
+              <div class="field">
+                <label class="label">Ingresa el horario actual de tu compañero <span class="req">*</span></label>
+                <div class="help">Ejemplo: L-V 11:00–20:00</div>
+                <input type="text" name="peerSchedule" required class="input" />
+              </div>
+              <div class="form-actions">
+                <button type="button" class="btn btn-secondary" id="backFromSwap">← Volver</button>
+                <button type="submit" class="btn" id="sendSwap">Enviar solicitud</button>
+              </div>
+            </form>
+          </section>
+        </div>
+
+        <div id="retardoForm" style="display:none;">
+          <section class="form-card">
+            <h2 class="form-title">Justificación de retardo <span aria-hidden="true">🕒</span></h2>
+            <p class="callout">Completa los datos. Puedes justificar hasta <b>3 días</b> después de la fecha del retardo.</p>
+            <form id="justifyForm">
+              <div class="field">
+                <label class="label">Ingresa tu justificación <span class="req">*</span></label>
+                <textarea name="reason" required class="input" rows="4" placeholder="Describe la situación…"></textarea>
+              </div>
+              <div class="field">
+                <label class="label">Ingresa la fecha de retardo <span class="req">*</span></label>
+                <div class="help">Las justificaciones se pueden mandar máximo <b>3 días</b> después.</div>
+                <input type="date" name="lateDate" required class="input" />
+              </div>
+              <div class="field">
+                <label class="label">Ingresa la hora a la que debías entrar <span class="req">*</span></label>
+                <input type="time" name="expectedTime" required class="input" />
+              </div>
+              <div class="field">
+                <label class="label">Ingresa la hora aproximada a la que te conectaste <span class="req">*</span></label>
+                <input type="time" name="actualTime" required class="input" />
+              </div>
+              <div class="form-actions">
+                <button type="button" class="btn btn-secondary" id="backFromJustify">← Volver</button>
+                <button type="submit" class="btn" id="sendJustify">Enviar justificación</button>
+              </div>
+            </form>
+          </section>
+        </div>
+
+        <div id="historialView" style="display:none;">
+          <section class="timeline-card">
+            <h2 class="form-title">Mis solicitudes <span aria-hidden="true">📜</span></h2>
+            <div id="histGrid" class="hist-grid"></div>
+            <div id="emptyState" class="empty" style="color:var(--muted);font-size:14px;padding:16px 0;display:none;">Aún no tienes solicitudes.</div>
+
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" id="backFromHistory">← Volver</button>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <div class="overlay" id="overlay" aria-hidden="true">
+      <div class="spinner" aria-label="Cargando"></div>
+      <div class="overlay-text" id="overlayText">Enviando…</div>
+    </div>
+
+    <div class="modal-backdrop" id="fbBackdrop" aria-hidden="true">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="fbTitle">
+        <h3 id="fbTitle">¿Cómo calificarías tu experiencia?</h3>
+        <p>Elige una calificación (1–5) y deja un comentario opcional.</p>
+        <div class="stars" id="fbStars" aria-label="Calificación">
+          <span class="star" data-v="1">★</span>
+          <span class="star" data-v="2">★</span>
+          <span class="star" data-v="3">★</span>
+          <span class="star" data-v="4">★</span>
+          <span class="star" data-v="5">★</span>
+        </div>
+        <textarea id="fbComment" placeholder="Comentario (opcional)"></textarea>
+        <div class="actions">
+          <button class="btn btn-secondary" id="fbSkip">Omitir</button>
+          <button class="btn" id="fbSend">Enviar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast">Listo</div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
+
+    <script>
+      (function(){
+        const $ = s => document.querySelector(s);
+        const $$ = s => Array.from(document.querySelectorAll(s));
+
+        const cards = $$('.card');
+        const startBtn = $('#startBtn');
+        const userEmail = $('#userEmail');
+        const toast = $('#toast');
+
+        const overlay = $('#overlay');
+        const overlayText = $('#overlayText');
+        
+        // Variables de Flatpickr y fechas ocupadas
+        let vacationRangePicker;
+        let occupiedDateRanges = [];
+
+        // Feedback modal
+        const fbBackdrop = $('#fbBackdrop');
+        const fbStars = $('#fbStars');
+        const fbComment = $('#fbComment');
+        const fbSkip = $('#fbSkip');
+        const fbSend = $('#fbSend');
+        let fbRating = 0;
+        let fbContext = { tipo:'', fila:'' };
+
+        let selectedKey = null;
+        let sessionEmail = '';
+        let sessionName = '';
+
+        function showToast(msg, isError){
+          toast.textContent = msg;
+          toast.classList.toggle('error', !!isError);
+          toast.classList.add('show');
+          setTimeout(()=> toast.classList.remove('show'), 3000);
+        }
+        function setLoading(show, text){
+          overlayText.textContent = text || 'Procesando…';
+          overlay.classList.toggle('show', !!show);
+        }
+        function prettify(email){
+          const local = (email||'').split('@')[0].replace(/[._-]+/g,' ');
+          return local.replace(/\b(\w)/g, s => s.toUpperCase());
+        }
+
+        // Session
+        if (typeof google !== 'undefined' && google.script?.run?.getSessionInfo) {
+          google.script.run.withSuccessHandler(function(info){
+            if (info && info.email) {
+              sessionEmail = info.email;
+              sessionName  = info.displayName || prettify(info.email);
+              userEmail.textContent = sessionEmail;
+            }
+          }).getSessionInfo();
+        }
+
+        function pick(card){
+          cards.forEach(c=> c.style.outline = '');
+          selectedKey = card.getAttribute('data-key');
+          card.style.outline = '3px solid var(--ring)';
+          startBtn.disabled = false;
+          startBtn.textContent = 'Continuar con “' + card.querySelector('.title').textContent + '” →';
+        }
+        cards.forEach(card => {
+          card.addEventListener('click', ()=> pick(card));
+          card.addEventListener('keydown', (ev)=>{ if (ev.key==='Enter' || ev.key===' ') { ev.preventDefault(); pick(card); }});
+        });
+
+        function show(sectionId){
+          $('.grid').style.display = 'none';
+          $('.cta').style.display = 'none';
+          document.getElementById(sectionId).style.display = 'block';
+        }
+        function back(sectionId){
+          document.getElementById(sectionId).style.display = 'none';
+          $('.grid').style.display = '';
+          $('.cta').style.display = '';
+          startBtn.disabled = true;
+          selectedKey = null;
+          cards.forEach(c=> c.style.outline = '');
+          $('#vacForm')?.reset();
+          $('#swapForm')?.reset();
+          $('#justifyForm')?.reset();
+        }
+        
+        // =========================================================
+        // === NUEVA FUNCIÓN: CALENDARIO DE VACACIONES (Flatpickr) ===
+        // =========================================================
+        function initVacationCalendar() {
+            const rangeInput = $('#vacationRange');
+            const sendBtn = $('#sendVac');
+            
+            if (vacationRangePicker) {
+                vacationRangePicker.destroy();
+            }
+
+            rangeInput.placeholder = 'Cargando fechas ocupadas...';
+            sendBtn.disabled = true;
+            
+            google.script.run
+                .withSuccessHandler(function(ranges) {
+                    rangeInput.placeholder = 'Selecciona la fecha de inicio y fin';
+                    
+                    // 1. Mapear rangos de fechas de la respuesta a formato Flatpickr
+                    occupiedDateRanges = ranges.map(range => ({
+                        from: range.start, // asumiendo YYYY-MM-DD
+                        to: range.end,     // asumiendo YYYY-MM-DD
+                        class: 'occupied-day' 
+                    }));
+                    
+                    // 2. Inicializa Flatpickr
+                    vacationRangePicker = flatpickr(rangeInput, {
+                        dateFormat: "Y-m-d",
+                        locale: "es",
+                        minDate: "today",
+                        mode: "range",
+                        // La clave para deshabilitar y resaltar
+                        disable: occupiedDateRanges, 
+                        onChange: function(selectedDates, dateStr, instance) {
+                            const startInput = $('#vacationStart');
+                            const endInput = $('#vacationEnd');
+
+                            if (selectedDates.length === 2) {
+                                // Formatea y guarda en campos ocultos (YYYY-MM-DD)
+                                const start = selectedDates[0].toISOString().split('T')[0];
+                                const end = selectedDates[1].toISOString().split('T')[0];
+                                startInput.value = start;
+                                endInput.value = end;
+                                sendBtn.disabled = false;
+                            } else {
+                                startInput.value = '';
+                                endInput.value = '';
+                                sendBtn.disabled = true;
+                            }
+                        }
+                    });
+                    
+                })
+                .withFailureHandler(function(err) {
+                    rangeInput.placeholder = 'Error al cargar calendario.';
+                    showToast('Error al cargar fechas ocupadas: ' + (err?.message || String(err)), true);
+                })
+                .getOccupiedVacationDates(); // Requiere esta función en Code.gs
+        }
+        // =========================================================
+        // === FIN NUEVA FUNCIÓN ===
+        // =========================================================
+        
+        // Feedback helpers
+        function openFeedback(tipo, fila){
+          fbContext = { tipo, fila };
+          fbRating = 0;
+          fbComment.value = '';
+          $$('#fbStars .star').forEach(s => s.classList.remove('sel'));
+          fbBackdrop.classList.add('show');
+        }
+        function closeFeedback(){
+          fbBackdrop.classList.remove('show');
+        }
+        fbStars.addEventListener('click', e=>{
+          const v = Number(e.target.getAttribute('data-v'));
+          if (!v) return;
+          fbRating = v;
+          $$('#fbStars .star').forEach(s => s.classList.toggle('sel', Number(s.getAttribute('data-v')) <= v));
+        });
+        fbSkip.addEventListener('click', ()=>{
+          closeFeedback();
+          showToast('Gracias 🙌', false);
+        });
+        fbSend.addEventListener('click', ()=>{
+          if (!fbRating) { showToast('Elige una calificación (1–5 ⭐)', true); return; }
+          setLoading(true, 'Guardando tu evaluación…');
+          google.script.run
+            .withSuccessHandler(res=>{
+              setLoading(false);
+              closeFeedback();
+              showToast('¡Gracias por tu evaluación! ⭐', false);
+            })
+            .withFailureHandler(err=>{
+              setLoading(false);
+              showToast(err?.message || 'No se pudo guardar tu evaluación', true);
+            })
+            .saveFeedback({
+              email: sessionEmail,
+              rating: fbRating,
+              comments: fbComment.value || '',
+              tipo: fbContext.tipo,
+              fila: fbContext.fila
+            });
+        });
+
+        // Etiquetas/badges de historial (igual que antes)
+        function statusTextForItem(it){
+          const est = (it.estado||'').toLowerCase();
+          const t   = (it.tipo||'').toLowerCase();
+          const hasN1Rejected = (it.steps||[]).some(s => s.label.includes('Compañero') && s.status === 'rejected');
+          const hasN1Approved = (it.steps||[]).some(s => s.label.includes('Compañero') && s.status === 'approved');
+
+          if (t === 'cambio_horario') {
+            if (est.startsWith('pendiente (n1)')) return 'En espera de aprobación de compañero';
+            if (est.startsWith('pendiente (n2)')) return 'En espera de aprobación de TL';
+            if (est === 'rechazado') return hasN1Rejected ? 'Rechazado por compañero' : 'Rechazado por TL';
+            if (est === 'aprobado')  return 'Aprobado por TL';
+            return hasN1Approved ? 'En espera de aprobación de TL' : 'En espera de aprobación de compañero';
+          } else {
+            if (est === 'pendiente') return 'En espera de aprobación de TL';
+            if (est === 'rechazado') return 'Rechazado por TL';
+            if (est === 'aprobado')  return 'Aprobado por TL';
+            return '—';
+          }
+        }
+        function badgeMarkup(text){
+          const l = text.toLowerCase();
+          let cls = 'b-pend';
+          if (l.includes('rechazado')) cls = 'b-rej';
+          else if (l.includes('aprobado')) cls = 'b-ok';
+          return `<span class="badge ${cls}">${text}</span>`;
+        }
+        function tipoLabel(t){ return t==='retardo' ? 'Justificación de retardo' : (t==='cambio_horario'?'Cambio de horario':'Vacaciones'); }
+        function descMeta(t,m){
+          if (t==='vacaciones') return `Período: <b>${m.startDate}</b> → <b>${m.endDate}</b>${m.anticip?' <span class="badge b-pend">⚠️ Anticipación &lt;10d</span>':''}`;
+          if (t==='retardo') return `Fecha: <b>${m.lateDate}</b> • Debía entrar: <b>${m.expectedTime}</b> • Conexión: <b>${m.actualTime}</b><br>Justificación: ${m.reason?`<i>${m.reason}</i>`:'-'}`;
+          if (t==='cambio_horario') return `Compañero: <b>${m.peerEmail}</b><br>Tu horario: <b>${m.yourSchedule}</b><br>Horario compañero: <b>${m.peerSchedule}</b>`;
+          return '';
+        }
+        function stepClass(st){
+          if (st.status === 'approved') return 'st st-ok';
+          if (st.status === 'rejected') return 'st st-rej';
+          return 'st st-wait';
+        }
+        function prettyStepLabel(stLabel, stStatus){
+          if (/espera.*TL/i.test(stLabel)) return 'En espera de aprobación de TL';
+          if (/espera.*compañero/i.test(stLabel)) return 'En espera de aprobación de compañero';
+          if (/Compañero \(N1\)/i.test(stLabel)) {
+            return (stStatus==='approved') ? 'Aprobado por compañero' : (stStatus==='rejected' ? 'Rechazado por compañero' : 'En espera de aprobación de compañero');
+          }
+          if (/Team Leader \(N2\)/i.test(stLabel) || /Decisión TL/i.test(stLabel)) {
+            return (stStatus==='approved') ? 'Aprobado por TL' : (stStatus==='rejected' ? 'Rechazado por TL' : 'En espera de aprobación de TL');
+          }
+          if (/Enviado/i.test(stLabel)) return 'Enviado';
+          return stLabel;
+        }
+
+        // FUNCIÓN MODIFICADA PARA MOSTRAR COMENTARIOS
+        function renderHistory(items){
+          const grid = $('#histGrid');
+          const empty = $('#emptyState');
+          grid.innerHTML = '';
+          if (!items || items.length === 0) { empty.style.display='block'; return; }
+          empty.style.display='none';
+
+          items.forEach(it=>{
+            const topStatus = statusTextForItem(it);
+            const el = document.createElement('div');
+            el.className = 'h-item';
+            el.innerHTML = `
+              <div class="h-head">
+                <div class="h-type">${tipoLabel(it.tipo)}</div>
+                <div>${badgeMarkup(topStatus)}</div>
+              </div>
+              <div class="h-meta">${it.timestamp} • #${it.fila}</div>
+              <div class="h-meta">${descMeta(it.tipo, it.meta || {})}</div>
+              <div class="steps">
+                ${ (it.steps||[]).map(st => {
+                   const label = prettyStepLabel(st.label||'', st.status||'');
+                   // Comentario del aprobador/rechazador
+                   const commentHtml = st.comment ? `<div class="st-comment">💬 ${st.comment}</div>` : '';
+                   
+                   return `
+                     <div class="${stepClass(st)}">
+                       <span class="dot"></span>
+                       <div class="st-body">
+                         <span class="st-label">${label}</span>
+                         <span class="st-at">${st.at ? st.at : ''}</span>
+                         ${commentHtml} </div>
+                     </div>
+                   `;
+                 }).join('') }
+              </div>
+            `;
+            grid.appendChild(el);
+          });
+        }
+        // FIN FUNCIÓN MODIFICADA
+
+        // NAV principal
+        startBtn.addEventListener('click', ()=>{
+          if (!selectedKey) return;
+
+          // VACACIONES - LÓGICA MODIFICADA PARA USAR CALENDARIO
+          if (selectedKey === 'vacaciones') {
+            show('vacacionesForm');
+            // Inicializar Flatpickr y cargar fechas ocupadas
+            initVacationCalendar(); 
+            
+            $('#backToMenu').onclick = ()=> back('vacacionesForm');
+
+            const vacForm = $('#vacForm');
+            const sendVac = $('#sendVac');
+            vacForm.onsubmit = function(e){
+              e.preventDefault();
+              
+              // OBTENER FECHAS DE LOS CAMPOS OCULTOS
+              const start = $('#vacationStart').value;
+              const end   = $('#vacationEnd').value;
+              
+              if (!start || !end) {
+                  showToast('Selecciona un rango válido de fechas en el calendario.', true); 
+                  return;
+              }
+
+              // Comprobación de anticipación (usando la fecha de inicio)
+              const today = new Date(); today.setHours(0,0,0,0);
+              const startD = new Date(start);
+              const diff = Math.round((startD - today)/(1000*60*60*24));
+              
+              if (diff < 10) {
+                const ok = confirm('Recuerda solicitar con 10–15 días de anticipación. ¿Deseas continuar?');
+                if (!ok) return;
+              }
+              
+              sendVac.disabled = true;
+              setLoading(true, 'Enviando solicitud…');
+              
+              google.script.run
+                .withSuccessHandler(res=>{
+                  sendVac.disabled = false; setLoading(false);
+                  if (res && res.ok) {
+                    showToast('Solicitud de vacaciones enviada ✉️');
+                    // Abrir feedback
+                    openFeedback(res.tipo, res.fila);
+                    back('vacacionesForm');
+                  } else {
+                    showToast((res && res.message) || 'No se pudo enviar.', true);
+                  }
+                })
+                .withFailureHandler(err=>{ sendVac.disabled = false; setLoading(false); showToast(err?.message || String(err), true); })
+                .submitVacation({ startDate: start, endDate: end, solicitanteEmail: sessionEmail, solicitanteNombre: sessionName });
+            };
+            return;
+          }
+
+          // CAMBIO DE HORARIO
+          if (selectedKey === 'cambio-horario') {
+            show('cambioForm');
+            $('#backFromSwap').onclick = ()=> back('cambioForm');
+
+            const swapForm = $('#swapForm');
+            const sendSwap = $('#sendSwap');
+            swapForm.onsubmit = function(e){
+              e.preventDefault();
+              const fd = new FormData(swapForm);
+              const peerEmail    = (fd.get('peerEmail')||'').trim();
+              const yourSchedule = (fd.get('yourSchedule')||'').trim();
+              const peerSchedule = (fd.get('peerSchedule')||'').trim();
+              const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+              if (!emailRe.test(peerEmail)) { showToast('Ingresa un correo válido de tu compañero.', true); return; }
+              if (!yourSchedule || !peerSchedule) { showToast('Completa ambos horarios.', true); return; }
+
+              sendSwap.disabled = true;
+              setLoading(true, 'Enviando solicitud…');
+              google.script.run
+                .withSuccessHandler(res=>{
+                  sendSwap.disabled = false; setLoading(false);
+                  if (res && res.ok) {
+                    showToast('Solicitud enviada a tu compañero ✉️');
+                    openFeedback(res.tipo, res.fila);
+                    back('cambioForm');
+                  } else {
+                    showToast((res && res.message) || 'No se pudo enviar.', true);
+                  }
+                })
+                .withFailureHandler(err=>{ sendSwap.disabled = false; setLoading(false); showToast(err?.message || String(err), true); })
+                .submitShiftSwap({ peerEmail, yourSchedule, peerSchedule, solicitanteEmail: sessionEmail, solicitanteNombre: sessionName });
+            };
+            return;
+          }
+
+          // JUSTIFICACIÓN
+          if (selectedKey === 'justificacion-retardo') {
+            show('retardoForm');
+            $('#backFromJustify').onclick = ()=> back('retardoForm');
+
+            const jForm = $('#justifyForm');
+            const sendJustify = $('#sendJustify');
+            jForm.onsubmit = function(e){
+              e.preventDefault();
+              const fd       = new FormData(jForm);
+              const reason   = (fd.get('reason')||'').trim();
+              const lateDate = fd.get('lateDate');
+              const expected = fd.get('expectedTime');
+              const actual   = fd.get('actualTime');
+              if (!reason) { showToast('Ingresa tu justificación.', true); return; }
+              if (!lateDate || !expected || !actual) { showToast('Completa todos los campos.', true); return; }
+
+              sendJustify.disabled = true;
+              setLoading(true, 'Enviando justificación…');
+              google.script.run
+                .withSuccessHandler(res=>{
+                  sendJustify.disabled = false; setLoading(false);
+                  if (res && res.ok) {
+                    showToast('Justificación enviada ✉️');
+                    openFeedback(res.tipo, res.fila);
+                    back('retardoForm');
+                  } else {
+                    showToast((res && res.message) || 'No se pudo enviar.', true);
+                  }
+                })
+                .withFailureHandler(err=>{ sendJustify.disabled = false; setLoading(false); showToast(err?.message || String(err), true); })
+                .submitTardiness({ reason, lateDate, expectedTime: expected, actualTime: actual, solicitanteEmail: sessionEmail, solicitanteNombre: sessionName });
+            };
+            return;
+          }
+
+          // MIS SOLICITUDES
+          if (selectedKey === 'mis-solicitudes') {
+            show('historialView');
+            $('#backFromHistory').onclick = ()=> back('historialView');
+
+            const grid = $('#histGrid'); grid.innerHTML = '<div class="h-meta">Cargando…</div>';
+            google.script.run
+              .withSuccessHandler(function(items){ renderHistory(items || []); })
+              .withFailureHandler(function(err){
+                grid.innerHTML = '';
+                $('#emptyState').style.display = 'block';
+                showToast(err?.message || 'No se pudo cargar el historial.', true);
+              })
+              .listMyRequests(100);
+            return;
+          }
+        });
+
+      })();
+    </script>
+    <script src="shim.js"></script>
+</body>
+</html>
