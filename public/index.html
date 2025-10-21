@@ -5,103 +5,108 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Request for absence</title>
   <style>
-    body { font-family: "Segoe UI", sans-serif; background: #faf9ff; color: #333;
-           display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-           min-height: 100vh; margin: 0; padding: 2rem; }
-    header { display: flex; justify-content: space-between; width: 100%; max-width: 900px;
-             align-items: center; margin-bottom: 1rem; }
-    h1 { font-size: 1.6rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
-    .user-info { display: flex; align-items: center; gap: 0.6rem; }
-    .user-icon { width: 32px; height: 32px; border-radius: 50%; background: hotpink; color: white;
-                 font-weight: bold; display: flex; align-items: center; justify-content: center; }
-    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1.2rem;
-             width: 100%; max-width: 900px; }
-    .card { background: white; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            padding: 1.4rem; display: flex; flex-direction: column; gap: 0.6rem; cursor: pointer;
-            transition: transform 0.15s ease, box-shadow 0.15s ease; }
-    .card:hover { transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
-    .card h3 { margin: 0; font-size: 1.1rem; color: #333; }
-    .card p { margin: 0; font-size: 0.9rem; color: #666; }
-    .footer { margin-top: 2rem; text-align: center; }
-    button { background: hotpink; color: white; border: none; border-radius: 8px;
-             padding: 0.7rem 1.5rem; font-size: 1rem; cursor: pointer; transition: background 0.2s ease; }
-    button:hover { background: deeppink; }
-    .loading { display: flex; align-items: center; gap: 0.4rem; font-size: 0.9rem; color: #777; }
-    .dot { width: 10px; height: 10px; border-radius: 50%; background: hotpink; animation: blink 1.2s infinite; }
-    @keyframes blink { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
+    :root{ --pink:#ff4fa0; --pink2:#ff2b8c; --bg:#faf9ff; --ink:#2a2a2a; --muted:#6b7280; --card:#fff; }
+    *{ box-sizing:border-box }
+    body{ margin:0; font-family: Segoe UI, Roboto, system-ui, Arial; background:var(--bg); color:var(--ink);
+          min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; }
+    .shell{ width:100%; max-width:1000px; }
+    header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; }
+    h1{ margin:0; font-size:1.6rem; display:flex; gap:.5rem; align-items:center }
+    .user-info{ display:flex; align-items:center; gap:.6rem }
+    .user-icon{ width:32px; height:32px; border-radius:50%; background:var(--pink); color:#fff; font-weight:700;
+                display:flex; align-items:center; justify-content:center }
+    .btn{ appearance:none; border:0; background:var(--pink); color:#fff; padding:.7rem 1.1rem; border-radius:10px; cursor:pointer }
+    .btn:hover{ background:var(--pink2) }
+    .muted{ color:var(--muted) }
+    .cards{ display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:16px }
+    .card{ background:var(--card); border-radius:16px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,.08); cursor:pointer;
+           transition:.15s transform,.15s box-shadow }
+    .card:hover{ transform:translateY(-3px); box-shadow:0 6px 18px rgba(0,0,0,.12) }
+    .card h3{ margin:0 0 6px 0; font-size:1.1rem } .card p{ margin:0; color:var(--muted); font-size:.95rem }
+    .loading{ display:flex; align-items:center; gap:.5rem; color:var(--muted) }
+    .dot{ width:10px; height:10px; border-radius:50%; background:var(--pink); animation: blink 1.2s infinite }
+    @keyframes blink{ 0%,100%{opacity:.25} 50%{opacity:1} }
+    .notice{ background:#fff3f7; color:#b30059; border:1px solid #ffc2db; padding:.75rem 1rem; border-radius:10px; margin-bottom:10px }
   </style>
 </head>
 <body>
-  <header>
-    <h1>💼 Request for absence</h1>
-    <div class="user-info">
-      <div class="user-icon" id="userIcon">?</div>
-      <span id="userEmail">cargando...</span>
-    </div>
-  </header>
+  <div class="shell">
+    <header>
+      <h1>💼 Request for absence</h1>
+      <div class="user-info">
+        <div class="user-icon" id="userIcon">?</div>
+        <span id="userEmail" class="muted">cargando…</span>
+        <button class="btn" id="logoutBtn" title="Cerrar sesión">Salir</button>
+      </div>
+    </header>
 
-  <main>
-    <div class="cards">
-      <div class="card" onclick="navigate('vacaciones')">
-        <h3>Solicitud de vacaciones</h3>
-        <p>Planea tus días libres y envía la solicitud a tu TL.</p>
-      </div>
-      <div class="card" onclick="navigate('cambio')">
-        <h3>Solicitud de cambio de horario</h3>
-        <p>Solicita intercambiar tu turno con un compañero.</p>
-      </div>
-      <div class="card" onclick="navigate('retardo')">
-        <h3>Justificación de retardo</h3>
-        <p>Explica la causa del retraso y solicita registro.</p>
-      </div>
-      <div class="card" onclick="navigate('solicitudes')">
-        <h3>Mis solicitudes</h3>
-        <p>Consulta el historial y estatus de tus solicitudes.</p>
-      </div>
-    </div>
+    <div id="authNotice" class="notice" style="display:none"></div>
 
-    <div class="footer">
-      <button id="continueBtn" onclick="continuar()">Continuar →</button>
-      <div id="loadingBox" class="loading" style="margin-top: 0.8rem;">
-        <div class="dot"></div>
-        <span>cargando...</span>
+    <main>
+      <div class="cards">
+        <div class="card" onclick="navigate('vacaciones')">
+          <h3>Solicitud de vacaciones</h3>
+          <p>Planea tus días libres y envía la solicitud a tu TL.</p>
+        </div>
+        <div class="card" onclick="navigate('cambio')">
+          <h3>Solicitud de cambio de horario</h3>
+          <p>Solicita intercambiar tu turno con un compañero.</p>
+        </div>
+        <div class="card" onclick="navigate('retardo')">
+          <h3>Justificación de retardo</h3>
+          <p>Explica la causa del retraso y solicita registro.</p>
+        </div>
+        <div class="card" onclick="navigate('solicitudes')">
+          <h3>Mis solicitudes</h3>
+          <p>Consulta el historial y estatus de tus solicitudes.</p>
+        </div>
       </div>
-    </div>
-  </main>
+
+      <div class="loading" style="margin-top:14px">
+        <div class="dot"></div><span id="loadingText">cargando…</span>
+      </div>
+    </main>
+  </div>
 
   <script>
-    async function loadSession() {
-      const userEmailEl = document.getElementById("userEmail");
-      const userIconEl = document.getElementById("userIcon");
-      const loadingBox = document.getElementById("loadingBox");
-      try {
-        const res = await fetch("/.auth/me", { credentials: "include" });
-        if (!res.ok) throw new Error("HTTP " + res.status);
+    function navigate(s){ alert('Navegar a: '+s+' (en desarrollo)'); }
+    async function loadSession(){
+      const emailEl = document.getElementById('userEmail');
+      const iconEl = document.getElementById('userIcon');
+      const loadingText = document.getElementById('loadingText');
+      const notice = document.getElementById('authNotice');
+      try{
+        const res = await fetch('/.auth/me', { credentials:'include' });
+        if(!res.ok) throw new Error('HTTP '+res.status);
         const data = await res.json();
-        const user = data && data.clientPrincipal;
-        if (user && user.userDetails) {
-          userEmailEl.textContent = user.userDetails;
-          userIconEl.textContent = user.userDetails[0].toUpperCase();
-          loadingBox.style.display = "none";
-        } else {
-          userEmailEl.textContent = "No autenticado";
-          userIconEl.textContent = "!";
-          loadingBox.querySelector("span").textContent = "sin sesión";
+        const p = data && data.clientPrincipal;
+        if(p && p.userDetails){
+          emailEl.textContent = p.userDetails;
+          iconEl.textContent = (p.userDetails[0] || '?').toUpperCase();
+          loadingText.textContent = 'listo';
+          notice.style.display='none';
+        }else{
+          emailEl.textContent = 'No autenticado';
+          iconEl.textContent = '!';
+          loadingText.textContent = 'sin sesión';
+          notice.style.display='block';
+          notice.innerHTML = 'No hay sesión activa. <a href="/.auth/login/aad">Inicia sesión con Microsoft</a>.';
         }
-      } catch (err) {
-        userEmailEl.textContent = "Error de sesión";
-        userIconEl.textContent = "!";
-        const s = document.createElement('div');
-        s.textContent = "error";
-        s.style.marginTop = "1rem";
-        s.style.color = "#b30059";
-        document.body.appendChild(s);
-        console.error("Error obteniendo sesión:", err);
+      }catch(e){
+        emailEl.textContent = 'Error de sesión';
+        iconEl.textContent = '!';
+        loadingText.textContent = 'error';
+        notice.style.display='block';
+        notice.innerHTML = 'No se pudo leer la sesión. <a href="/.auth/login/aad">Volver a iniciar sesión</a>.';
+        console.error(e);
       }
     }
-    function navigate(section){ alert("Navegar a: " + section + " (en desarrollo)"); }
-    function continuar(){ alert("Continuar presionado. Aquí implementas la siguiente acción."); }
-    window.addEventListener("DOMContentLoaded", loadSession);
+    async function doLogout(){
+      await fetch('/.auth/logout', { credentials:'include' });
+      location.href='/.auth/login/aad';
+    }
+    document.getElementById('logoutBtn').addEventListener('click', doLogout);
+    window.addEventListener('DOMContentLoaded', loadSession);
   </script>
 </body>
 </html>
