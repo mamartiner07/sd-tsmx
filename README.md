@@ -1,26 +1,19 @@
-# Ausencias - Azure Web App (Node/Express)
+# Ausencias - Azure Static Web App (Autenticación Microsoft)
 
-Este paquete contiene:
-- `public/Index.html` (tu archivo original, con una única línea extra para cargar `shim.js`)
-- `public/ConfirmacionFinal.html` (tu archivo original, sin cambios en el texto)
-- `public/shim.js` (emula `google.script.run` y llama a `/api/*`)
-- `server.js` y `package.json` (backend Express listo para Azure)
+Versión lista para desplegar en **Azure Static Web Apps** con autenticación integrada.
 
-## Ejecutar localmente
-```bash
-npm i
-npm start
-# abre http://localhost:8080
-```
+## Estructura
+- `public/index.html` → interfaz principal.
+- `public/routes.json` → configuración de autenticación y rutas.
 
-## Desplegar en Azure (App Service Linux, Node 18+)
-```bash
-# crea recursos
-az group create -n rg-ausencias -l eastus
-az appservice plan create -g rg-ausencias -n plan-ausencias --sku B1 --is-linux
-az webapp create -g rg-ausencias -p plan-ausencias -n web-ausencias-demo --runtime "NODE:18LTS"
+## Cómo desplegar
+1. Crea un nuevo **Static Web App** en Azure Portal.
+2. Conecta tu repositorio GitHub que contenga estos archivos.
+3. En "Build Presets" selecciona **Custom**.
+4. Configura:
+   - App location: `/public`
+   - Api location: *(vacío)*
+   - Output location: `/public`
+5. Guarda y despliega.
 
-# despliegue por zip
-zip -r app.zip .
-az webapp deploy --resource-group rg-ausencias --name web-ausencias-demo --src-path app.zip --type zip
-```
+La autenticación Microsoft se configurará automáticamente gracias al `routes.json`.
