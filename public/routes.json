@@ -5,6 +5,6 @@
   ],
   "navigationFallback": { "rewrite": "/index.html" },
   "responseOverrides": {
-    "401": { "redirect": "/.auth/login/microsoft", "statusCode": 302 }
+    "401": { "redirect": "/.auth/login/aad", "statusCode": 302 }
   }
 }
