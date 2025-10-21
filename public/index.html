@@ -29,48 +29,9 @@
     .loading { display: flex; align-items: center; gap: 0.4rem; font-size: 0.9rem; color: #777; }
     .dot { width: 10px; height: 10px; border-radius: 50%; background: hotpink; animation: blink 1.2s infinite; }
     @keyframes blink { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
-    /* Preview banner */
-    .preview-banner { position: fixed; top: 12px; right: 12px; background: #fff0f5; color: #b30059;
-      border: 1px solid #ffb3d1; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.08);
-      padding: .75rem 1rem; z-index: 9999; display: none; align-items: center; gap: .6rem; }
-    .preview-banner .dot { background: #b30059; }
-    .preview-banner button { background: #b30059; }
   </style>
-  <script>
-    // Detectar entornos de preview (*.N.azurestaticapps.net) y redirigir al dominio raíz
-    (function() {
-      var m = location.hostname.match(/^([a-z0-9-]+)\.(\d+)\.azurestaticapps\.net$/i);
-      if (m) {
-        var baseHost = m[1] + ".azurestaticapps.net";
-        var target = "https://" + baseHost + location.pathname + location.search + location.hash;
-        // Mostrar banner y redirigir en 2s
-        window.addEventListener("DOMContentLoaded", function(){
-          var b = document.getElementById("previewBanner");
-          b.style.display = "flex";
-          var countdown = 2;
-          var lbl = document.getElementById("previewCountdown");
-          lbl.textContent = countdown;
-          var t = setInterval(function(){
-            countdown--; lbl.textContent = countdown;
-            if (countdown <= 0) { clearInterval(t); location.href = target; }
-          }, 1000);
-          document.getElementById("goProdBtn").onclick = function(){ location.href = target; };
-          document.getElementById("stayHereBtn").onclick = function(){ clearInterval(t); b.style.display="none"; };
-        });
-      }
-    })();
-  </script>
 </head>
 <body>
-  <!-- Preview banner -->
-  <div class="preview-banner" id="previewBanner">
-    <div class="dot" style="width:10px;height:10px;border-radius:50%"></div>
-    <strong>Estás viendo un entorno de <em>preview</em>.</strong>
-    <span>Redirigiendo a producción en <span id="previewCountdown">2</span>s…</span>
-    <button id="goProdBtn">Ir ahora</button>
-    <button id="stayHereBtn" style="background:#aaa">Quedarme</button>
-  </div>
-
   <header>
     <h1>💼 Request for absence</h1>
     <div class="user-info">
@@ -115,6 +76,7 @@
       const loadingBox = document.getElementById("loadingBox");
       try {
         const res = await fetch("/.auth/me", { credentials: "include" });
+        if (!res.ok) throw new Error("HTTP " + res.status);
         const data = await res.json();
         const user = data && data.clientPrincipal;
         if (user && user.userDetails) {
